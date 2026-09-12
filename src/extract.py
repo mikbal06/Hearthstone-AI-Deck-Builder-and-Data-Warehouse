@@ -4,8 +4,12 @@ import pandas as pd
 from dotenv import load_dotenv
 
 print("Extracting Hearthstone cards...")
-def extract_hearthstone_cards(): 
+
+
+def extract_hearthstone_cards():
+
     load_dotenv()
+
     client_id = os.getenv("BLIZZARD_CLIENT_ID")
     client_secret = os.getenv("BLIZZARD_CLIENT_SECRET")
 
@@ -17,6 +21,7 @@ def extract_hearthstone_cards():
     )
 
     token_response.raise_for_status()
+
     access_token = token_response.json()["access_token"]
 
     print("Token received.")
@@ -32,6 +37,7 @@ def extract_hearthstone_cards():
     cards_url = "https://us.api.blizzard.com/hearthstone/cards"
 
     while True:
+
         response = requests.get(
             cards_url,
             headers=headers,
@@ -43,6 +49,7 @@ def extract_hearthstone_cards():
         )
 
         response.raise_for_status()
+
         data = response.json()
 
         cards = data.get("cards", [])
@@ -52,7 +59,10 @@ def extract_hearthstone_cards():
 
         all_cards.extend(cards)
 
-        print(f"Page {page} fetched — {len(all_cards)} cards total")
+        print(
+            f"Page {page} fetched — "
+            f"{len(all_cards)} cards total"
+        )
 
         if page >= data["pageCount"]:
             break
@@ -60,10 +70,21 @@ def extract_hearthstone_cards():
         page += 1
 
     hearthstone_df = pd.DataFrame(all_cards)
-    hearthstone_df.to_csv("../bronze_hearthstone_data/hearthstone_cards.csv", index=False)
-    print("Data saved to CSV.")
-    return hearthstone_df 
 
+    # Get folder where this Python file is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
 
-df = extract_hearthstone_cards()
-print(df.head())
+    output_path = os.path.join(
+        script_dir,
+        "..",
+        "bronze_hearthstone_data",
+        "raw_hearthstone_cards.csv"
+    )
+
+    hearthstone_df.to_csv(output_path, index=False)
+
+    print(f"Raw HearthstoneData saved to {output_path}")
+
+    return hearthstone_df
+
+extract_hearthstone_cards()
