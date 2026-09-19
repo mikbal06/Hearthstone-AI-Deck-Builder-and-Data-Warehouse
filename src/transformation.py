@@ -6,9 +6,11 @@ import re
 from dotenv import load_dotenv
 import os 
 
-load_dotenv()
-file_path = '../bronze_hearthstone_data/raw_hearthstone_cards.csv' 
-hearthstone_df = pd.read_csv(file_path)
+def load_path():
+    load_dotenv()
+    file_path = '../bronze_hearthstone_data/raw_hearthstone_cards.csv' 
+    hearthstone_df = pd.read_csv(file_path)
+    return hearthstone_df
 
 def map_hearthstone_cards(hearthstone_df):
 
@@ -113,14 +115,16 @@ def clean_hearthstone_cards(hearthstone_df):
     silver_df["text"] = silver_df["text"].apply(clean_text)
     return silver_df
 
-mapped_hearthstone_df = map_hearthstone_cards(hearthstone_df) 
-cleaned_hearthstone_df = clean_hearthstone_cards(mapped_hearthstone_df)
-script_dir = os.path.dirname(os.path.abspath(__file__))
-output_path = os.path.join(
-        script_dir,
-        "..",
-        "silver_hearthstone_data",
-        "silver_hearthstone_cards.csv"
-    )
-cleaned_hearthstone_df.to_csv(output_path, index=False)
-print(f"Cleaned Hearthstone Data saved to {output_path}")
+def transform_hearthstone_cards():
+    hearthstone_df = load_path()
+    mapped_hearthstone_df = map_hearthstone_cards(hearthstone_df) 
+    cleaned_hearthstone_df = clean_hearthstone_cards(mapped_hearthstone_df)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.join(
+            script_dir,
+            "..",
+            "silver_hearthstone_data",
+            "silver_hearthstone_cards.csv"
+        )
+    cleaned_hearthstone_df.to_csv(output_path, index=False)
+    print(f"Cleaned Hearthstone Data saved to {output_path}")

@@ -79,12 +79,13 @@ def extract_hearthstone_cards():
         "..",
         "bronze_hearthstone_data",
         "raw_hearthstone_cards.csv"
-    )
 
+    )
+    
     hearthstone_df.to_csv(output_path, index=False)
 
     print(f"Raw HearthstoneData saved to {output_path}")
 
     return hearthstone_df
 
-extract_hearthstone_cards()
+
