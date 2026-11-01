@@ -30,6 +30,8 @@ def extract_hearthstone_cards():
         "Authorization": f"Bearer {access_token}"
     }
 
+    headers["Authorization"] = "Bearer " + access_token
+
     # Fetch all Hearthstone cards
     all_cards = []
     page = 1
@@ -81,11 +83,67 @@ def extract_hearthstone_cards():
         "raw_hearthstone_cards.csv"
 
     )
-    
+
     hearthstone_df.to_csv(output_path, index=False)
 
     print(f"Raw HearthstoneData saved to {output_path}")
 
     return hearthstone_df
 
+# Extract Hearthstone metadata and save it to CSV files
+def extract_hearthstone_metadata():
 
+    load_dotenv()
+
+    client_id = os.getenv("BLIZZARD_CLIENT_ID")
+    client_secret = os.getenv("BLIZZARD_CLIENT_SECRET")
+
+    # Get access token
+    token_response = requests.post(
+        "https://oauth.battle.net/token",
+        data={"grant_type": "client_credentials"},
+        auth=(client_id, client_secret)
+    )
+
+    token_response.raise_for_status()
+
+    access_token = token_response.json()["access_token"]
+
+    print("Token received.")
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    headers["Authorization"] = "Bearer " + access_token
+
+    metadata_response = requests.get(
+        "https://us.api.blizzard.com/hearthstone/metadata",
+        headers=headers,
+        params={"locale": "en_US"}
+    )
+    metadata_response.raise_for_status()
+
+    metadata = metadata_response.json()
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(script_dir, "..", "hearthstone_meta_data")
+    os.makedirs(output_dir, exist_ok=True)
+
+    metadata_dataframes = {}
+    for metadata_name, metadata_items in metadata.items():
+        if not isinstance(metadata_items, list):
+            raise ValueError(
+                f"Expected metadata collection '{metadata_name}' to be a list"
+            )
+
+        metadata_df = pd.DataFrame(metadata_items)
+        output_path = os.path.join(
+            output_dir,
+            f"metadata_{metadata_name}.csv"
+        )
+        metadata_df.to_csv(output_path, index=False)
+        metadata_dataframes[metadata_name] = metadata_df
+        print(f"Metadata {metadata_name} saved to {output_path}")
+
+    return metadata_dataframes
