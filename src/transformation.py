@@ -1,10 +1,16 @@
 from email.mime import text
 
+import json
 import pandas as pd
 import requests
 import re
 from dotenv import load_dotenv
 import os 
+
+def parse_id_list(value):
+    if isinstance(value, str):
+        value = json.loads(value) if value.strip() else []
+    return value if isinstance(value, list) else []
 
 def load_path():
     load_dotenv()
@@ -63,11 +69,11 @@ def map_hearthstone_cards(hearthstone_df):
 
 
     hearthstone_df["multiClassNames"] = hearthstone_df["multiClassIds"].apply(
-        lambda ids: [class_map.get(i) for i in ids] if isinstance(ids, list) else [] )
+        lambda ids: [class_map.get(i) for i in parse_id_list(ids)])
 
     keyword_map = {k["id"]: k["name"] for k in metadata["keywords"]}
     hearthstone_df["keywordNames"] = hearthstone_df["keywordIds"].apply(
-        lambda ids: [keyword_map.get(i) for i in ids] if isinstance(ids, list) else []
+        lambda ids: [keyword_map.get(i) for i in parse_id_list(ids)]
     )
     return hearthstone_df 
 
